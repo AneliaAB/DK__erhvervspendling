@@ -1,0 +1,45 @@
+﻿fra_lufthavn;år;Til_København;Til_Billund;Til_Aarhus;Til_Aalborg;Til_Karup;Til_Esbjerg;Til_Bornholm;Til_Sønderborg;Til_Roskilde;Til_Thisted;Til_øvrige_lufthavne
+Fra København;2020;2;9;28;180;13;0;61;10;nan;nan;0
+Fra København;2021;2;1;24;282;9;0;89;12;nan;nan;0
+Fra København;2022;3;5;57;412;15;0;91;19;nan;nan;0
+Fra København;2023;4;4;64;396;5;0;88;22;nan;nan;0
+Fra Billund;2020;8;0;0;0;0;0;4;nan;0;nan;0
+Fra Billund;2021;5;0;0;0;0;0;7;nan;0;nan;0
+Fra Billund;2022;9;0;0;0;0;0;7;nan;0;nan;0
+Fra Billund;2023;11;0;0;0;0;0;6;nan;0;nan;0
+Fra Aarhus;2020;27;0;0;0;nan;nan;nan;nan;0;nan;0
+Fra Aarhus;2021;25;0;0;0;nan;nan;nan;nan;0;nan;0
+Fra Aarhus;2022;60;0;0;0;nan;nan;nan;nan;0;nan;0
+Fra Aarhus;2023;66;0;0;0;nan;nan;nan;nan;0;nan;0
+Fra Aalborg;2020;175;0;nan;nan;0;0;3;0;0;nan;0
+Fra Aalborg;2021;279;0;nan;nan;0;0;5;0;0;nan;0
+Fra Aalborg;2022;406;0;nan;nan;0;0;4;0;0;nan;0
+Fra Aalborg;2023;390;0;nan;nan;0;0;4;0;0;nan;0
+Fra Karup;2020;13;nan;nan;nan;0;0;nan;nan;0;nan;0
+Fra Karup;2021;9;nan;nan;nan;0;0;nan;nan;0;nan;0
+Fra Karup;2022;16;nan;nan;nan;0;0;nan;nan;0;nan;0
+Fra Karup;2023;6;nan;nan;nan;0;0;nan;nan;0;nan;0
+Fra Esbjerg;2020;0;0;0;0;nan;0;nan;0;0;nan;19
+Fra Esbjerg;2021;0;0;0;0;nan;0;nan;0;0;nan;3
+Fra Esbjerg;2022;0;0;0;0;nan;0;nan;0;0;nan;5
+Fra Esbjerg;2023;0;0;0;0;nan;0;nan;0;0;nan;4
+Fra Bornholm;2020;58;4;nan;2;0;nan;0;1;0;nan;0
+Fra Bornholm;2021;79;4;nan;4;0;nan;0;1;0;nan;0
+Fra Bornholm;2022;83;6;nan;4;0;nan;0;1;0;nan;0
+Fra Bornholm;2023;86;5;nan;4;0;nan;0;1;0;nan;0
+Fra Sønderborg;2020;10;0;0;0;0;nan;nan;nan;0;nan;0
+Fra Sønderborg;2021;12;0;0;0;0;nan;nan;nan;0;nan;0
+Fra Sønderborg;2022;20;0;0;0;0;nan;nan;nan;0;nan;0
+Fra Sønderborg;2023;23;0;0;0;0;nan;nan;nan;0;nan;0
+Fra Roskilde;2020;0;0;0;0;0;0;0;0;2;0;1
+Fra Roskilde;2021;0;0;0;0;0;0;0;0;2;0;2
+Fra Roskilde;2022;0;0;0;0;0;0;0;0;1;0;2
+Fra Roskilde;2023;0;0;0;0;0;0;0;0;1;0;1
+Fra Thisted;2020;0;0;nan;0;nan;nan;nan;nan;0;nan;0
+Fra Thisted;2021;0;0;nan;0;nan;nan;nan;nan;0;nan;0
+Fra Thisted;2022;0;0;nan;0;nan;nan;nan;nan;0;nan;0
+Fra Thisted;2023;0;0;nan;0;nan;nan;nan;nan;0;nan;0
+Fra øvrige lufthavne;2020;0;0;0;0;0;19;0;0;1;nan;nan
+Fra øvrige lufthavne;2021;0;0;0;0;0;3;0;0;1;nan;nan
+Fra øvrige lufthavne;2022;0;0;0;0;0;4;0;0;2;nan;nan
+Fra øvrige lufthavne;2023;0;0;0;0;0;4;0;0;1;nan;nan
