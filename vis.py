@@ -1,3 +1,22 @@
+import subprocess
+import os
+import sys
+
+def run_bash_setup():
+    if os.path.isfile("setup.sh"):
+        print("Running setup.sh...")
+        try:
+            subprocess.run(["bash", "setup.sh"], check=True)
+            print("setup.sh executed successfully.")
+        except subprocess.CalledProcessError as e:
+            print("An error occurred while running setup.sh:", e)
+    else:
+        print("No setup.sh file found. Skipping bash setup.")
+
+# Run the setup steps
+if __name__ == "__main__":
+    run_bash_setup()
+
 from dash import Dash, dcc, html, Input, Output
 import plotly.express as px
 import plotly.graph_objects as go
