@@ -76,7 +76,7 @@ y_min = kvinder.min()
 #variables 
 options= ['I alt', '5-10 km', '20-30 km', '30-40 km', '40-50 km', 'Over 50 km']
 
-#status barplot
+#STATUS BARPLOT.....
 status_df = pd.read_csv('data/i_alt/afstandIFTstatus2022.csv', delimiter=',', encoding='utf-8')
 status_df = status_df.drop([0, 1, 2,3])
 df_total = status_df[status_df['afstand'] != 'total']
@@ -87,8 +87,6 @@ melted_df = df_total.melt(id_vars=['afstand'], var_name='Status', value_name='Co
 melted_df['Total'] = melted_df.groupby('Status')['Count'].transform('sum')  # Total count per Status
 melted_df['Percentage'] = (melted_df['Count'] / melted_df['Total']) * 100  # Percent calculation
 melted_df['Percentage_Text'] = melted_df['Percentage'].apply(lambda x: f"{x:.1f}%")  # Format for display
-print(melted_df)
-
 
 # Plot with Plotly Express as a stacked bar chart
 status_fig = px.bar(melted_df, x='Status', y='Count', color='afstand',
@@ -104,12 +102,32 @@ status_fig = px.bar(melted_df, x='Status', y='Count', color='afstand',
                     'Percentage_Text': False   # Exclude the formatted percentage text
                 })
 
+#JOSON.....
 # Load GeoJSON files
 with open("data/simplified_geojson_file.geojson") as f:
     kommune_geojson = json.load(f)
 
 with open("data/regioner-geojson-wgs84.json") as f:
     regioner_geojson = json.load(f)
+
+#FLIGHTS MAP......
+#%%
+import pandas as pd
+passagertal = pd.read_csv('data/i_alt/passagertal.csv', delimiter=';', encoding='utf-8')
+#%%
+print(passagertal)
+airports = {
+    "København": (55.6181, 12.6565),
+    "Billund": (55.7403, 9.1522),
+    "Aarhus": (56.2990, 10.6190),
+    "Aalborg": (57.0928, 9.8494),
+    "Karup": (56.3088, 9.1451),
+    "Esbjerg": (55.5255, 8.5534),
+    "Bornholm": (55.0633, 14.7594),
+    "Sønderborg": (54.9642, 9.7913),
+    "Roskilde": (55.5851, 12.1289),
+    "Thisted": (56.9565, 8.6857),
+}
 
 #_____________________________________________________________________DASH APP________________________________________________________________
 app = Dash(__name__)
@@ -175,10 +193,19 @@ app.layout = html.Div([
                         style={'width': '120px'} ),
             dcc.Graph(id='histogram')]),
 
-        html.Div(
+        html.Div([
             html.H1('Nutidsbillede af flytransport', style={'margin': 'auto', 'padding':'20px'}),
-            
-        )
+            html.P('Viser antallet af afrejsende fra startdestination til slutdestination'),
+            dcc.RadioItems(
+                style={'width': '20%', 'display': 'inline-block', 'padding': '20px', 'float':'left'},
+                id='fra_lufthavn', 
+                options=passagertal['fra_lufthavn'].unique(),
+                value="Fra København"
+            ),
+            dcc.Graph(
+                id='flight_map',
+                style={'width': '70%', 'display': 'inline-block', 'padding': '20px', 'float':'right'})
+])
 ]),
 
 #____________________________________________________________CALLBACKS_________________________________________________________________
@@ -261,6 +288,30 @@ def update_kommune_map_arbejde(data, afstand_km, segment):
     )
     return fig
 
+@app.callback(
+    Output("flight_map", "figure"), 
+    Input("fra_lufthavn", "value"))
+def display_cflights(lufthavn):
+    fig_flight_map = go.Figure()
+    passagertal_aktiv = passagertal.loc[(passagertal['fra_lufthavn']==lufthavn) & (passagertal['år']==2023)]
+    passagertal_aktiv = passagertal_aktiv.drop(columns=['Til_øvrige_lufthavne'])
+    passagertal_aktiv = passagertal_aktiv.dropna(axis='columns')
+    print(passagertal_aktiv)
+    for column in passagertal_aktiv.iloc[:,2:]: 
+        print(passagertal_aktiv[column])
+        fig_flight_map.add_trace(go.Scattermapbox(
+            mode = "markers+lines",
+            lon = airports[lufthavn.split(' ')[1]],
+            lat = airports[column.split('_')[1]],
+            marker = {'size': int(passagertal_aktiv[column])}))
+    fig_flight_map.update_layout(
+        margin ={'l':0,'t':0,'b':0,'r':0},
+        map = {
+            'center': {'lon': 10, 'lat': 10},
+            'style': "open-street-map",
+            'center': {'lon': -20, 'lat': -20},
+            'zoom': 1})
+    return fig_flight_map
 
 if __name__ == '__main__':
     app.run_server(debug=True)
