@@ -111,11 +111,8 @@ with open("data/regioner-geojson-wgs84.json") as f:
     regioner_geojson = json.load(f)
 
 #FLIGHTS MAP......
-#%%
 import pandas as pd
 passagertal = pd.read_csv('data/i_alt/passagertal.csv', delimiter=';', encoding='utf-8')
-#%%
-print(passagertal)
 airports = {
     "København": (55.6181, 12.6565),
     "Billund": (55.7403, 9.1522),
@@ -128,7 +125,6 @@ airports = {
     "Roskilde": (55.5851, 12.1289),
     "Thisted": (56.9565, 8.6857),
 }
-
 #_____________________________________________________________________DASH APP________________________________________________________________
 app = Dash(__name__)
 
@@ -197,14 +193,17 @@ app.layout = html.Div([
             html.H1('Nutidsbillede af flytransport', style={'margin': 'auto', 'padding':'20px'}),
             html.P('Viser antallet af afrejsende fra startdestination til slutdestination'),
             dcc.RadioItems(
-                style={'width': '20%', 'display': 'inline-block', 'padding': '20px', 'float':'left'},
+                style={'width': '20%', 'display': 'inline-block', 'padding': '5px', 'float':'left'},
                 id='fra_lufthavn', 
                 options=passagertal['fra_lufthavn'].unique(),
                 value="Fra København"
             ),
             dcc.Graph(
                 id='flight_map',
-                style={'width': '70%', 'display': 'inline-block', 'padding': '20px', 'float':'right'})
+                style={'width': '60%', 'display': 'inline-block', 'padding': '20px', 'float':'right'}),
+            dcc.Graph(
+                id='flight_sankey',
+                style={'width': '30%', 'display': 'inline-block', 'padding': '5px', 'float':'left'})
 ])
 ]),
 
@@ -300,7 +299,7 @@ def display_cflights(lufthavn):
     for column in passagertal_aktiv.iloc[:,2:]: 
         print(passagertal_aktiv[column])
         fig_flight_map.add_trace(go.Scattermapbox(
-            mode = "markers+lines",
+            mode = "lines",
             lon=[
                 airports[lufthavn.split(' ')[1]][1],  # Longitude of source airport
                 airports[column.split('_')[1]][1]  # Longitude of destination airport
@@ -309,8 +308,12 @@ def display_cflights(lufthavn):
                 airports[lufthavn.split(' ')[1]][0],  # Latitude of source airport
                 airports[column.split('_')[1]][0]  # Latitude of destination airport
             ],
+            line=dict(
+                    width=4,
+                    color=px.colors.sequential.Plasma[min(int(passagertal_aktiv[column]) // 50, 9)]  # Adjust scale for color
+                ),
             hoverinfo="text",
-            text=f"Passengers: {int(passagertal_aktiv[column].iloc[0])}")
+            text=f"Passengers: {int(passagertal_aktiv[column].iloc[0])}"))
     fig_flight_map.update_layout(
         mapbox={
             'style': "open-street-map",
@@ -320,6 +323,69 @@ def display_cflights(lufthavn):
         margin={'l': 0, 't': 0, 'b': 0, 'r': 0}
     )
     return fig_flight_map
+
+import plotly.graph_objects as go
+
+@app.callback(
+    Output("flight_sankey", "figure"),
+    Input("fra_lufthavn", "value")
+)
+def display_sankey(lufthavn):
+    # Filter the data for the selected airport and year 2023
+    passagertal_aktiv = passagertal.loc[
+        (passagertal['fra_lufthavn'] == lufthavn) & (passagertal['år'] == 2023)
+    ]
+    passagertal_aktiv = passagertal_aktiv.drop(columns=['Til_øvrige_lufthavne']).dropna(axis='columns')
+
+    # Create lists for Sankey diagram nodes and links
+    source_airports = [lufthavn.split(' ')[1]]  # Extract the source airport name
+    target_airports = [col.split('_')[1] for col in passagertal_aktiv.columns[2:] if col.split('_')[1] in airports]
+    traffic_amounts = [int(passagertal_aktiv[col]) for col in passagertal_aktiv.columns[2:] if col.split('_')[1] in airports]
+
+    # Filter out zero traffic amounts
+    target_airports = [target for target, traffic in zip(target_airports, traffic_amounts) if traffic > 0]
+    traffic_amounts = [traffic for traffic in traffic_amounts if traffic > 0]
+
+    # Combine source and target airports into a single list of nodes
+    all_airports = source_airports + target_airports
+    airport_indices = {airport: i for i, airport in enumerate(all_airports)}  # Map airports to indices
+
+    # Define Sankey diagram links
+    links = {
+        "source": [airport_indices[source_airports[0]]] * len(target_airports),
+        "target": [airport_indices[airport] for airport in target_airports],
+        "value": traffic_amounts
+    }
+
+    # Define Sankey diagram nodes
+    nodes = {
+        "label": all_airports
+    }
+
+    # Create the Sankey diagram
+    fig_sankey = go.Figure(go.Sankey(
+        node=dict(
+            pad=15,
+            thickness=20,
+            line=dict(color="black", width=0.5),
+            label=nodes["label"]
+        ),
+        link=dict(
+            source=links["source"],
+            target=links["target"],
+            value=links["value"]
+        )
+    ))
+
+    # Update layout
+    fig_sankey.update_layout(
+        title_text=f"Passenger Traffic from {lufthavn}",
+        font_size=10
+    )
+
+    return fig_sankey
+
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
