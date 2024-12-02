@@ -83,13 +83,26 @@ df_total = status_df[status_df['afstand'] != 'total']
 
 # Melt the DataFrame to long format for Plotly Express
 melted_df = df_total.melt(id_vars=['afstand'], var_name='Status', value_name='Count')
+# Calculate percentages
+melted_df['Total'] = melted_df.groupby('Status')['Count'].transform('sum')  # Total count per Status
+melted_df['Percentage'] = (melted_df['Count'] / melted_df['Total']) * 100  # Percent calculation
+melted_df['Percentage_Text'] = melted_df['Percentage'].apply(lambda x: f"{x:.1f}%")  # Format for display
+print(melted_df)
+
 
 # Plot with Plotly Express as a stacked bar chart
 status_fig = px.bar(melted_df, x='Status', y='Count', color='afstand',
              title="Beskæftigede efter socioøkonomisk status",
              labels={'Count': 'Antal', 'Status': 'Socioøkonomisk status'},
-             text='Count',  # Show counts on bars
-             color_discrete_sequence=px.colors.qualitative.Plotly)
+             text='Percentage_Text',  # Show counts on bars
+             color_discrete_sequence=px.colors.qualitative.Plotly,
+            hover_data={
+                    'Status':False,
+                    'Count': True,             # Show raw counts
+                    'Percentage': ':.2f',      # Show percentage with 2 decimal points
+                    'Total': False,            # Exclude total from hover
+                    'Percentage_Text': False   # Exclude the formatted percentage text
+                })
 
 # Load GeoJSON files
 with open("data/simplified_geojson_file.geojson") as f:
@@ -105,15 +118,6 @@ app.layout = html.Div([
     html.H1('Nutidsbillede af erhvervspendling', style={'margin': 'auto', 'padding':'20px'}),
     html.H3('Beskæftigede efter pendlingsafstand og socioøkonomisk status'),
     dcc.Graph(figure=status_fig),
-
-    html.H3('Antal beskæftigede efter regioner og afstand'),
-    dcc.Dropdown(
-        id='data_dropdown',
-        options= options,
-        value='I alt',  # Default value for Map 2
-        style={'width': '200px'}
-    ),
-    dcc.Graph(id='map_graph', style={'padding':'20px'}),
 
     html.Div([
         html.H3('Antal beskæftigede efter arbejdsstedsområde, køn, tid og pendlingsafstand'),
@@ -169,9 +173,14 @@ app.layout = html.Div([
                             {"label": "mænd", "value": "mænd"}
                         ], value="i alt",  # Default value for Map,
                         style={'width': '120px'} ),
-            dcc.Graph(id='histogram')
-        ])
-])
+            dcc.Graph(id='histogram')]),
+
+        html.Div(
+            html.H1('Nutidsbillede af flytransport', style={'margin': 'auto', 'padding':'20px'}),
+            
+        )
+]),
+
 #____________________________________________________________CALLBACKS_________________________________________________________________
 @app.callback(
     Output('histogram', 'figure'),
@@ -252,32 +261,6 @@ def update_kommune_map_arbejde(data, afstand_km, segment):
     )
     return fig
 
-# Callback to update map based on dropdown selection
-@app.callback(
-    Output('map_graph', 'figure'),
-    [Input('data_dropdown', 'value')]
-)
-def update_map(selected_data):
-    # Create a choropleth map with the selected data column
-    fig_map = px.choropleth_mapbox(
-        i_alt_km,
-        geojson=regioner_geojson,
-        locations="id",
-        featureidkey="id",
-        color=selected_data,
-        hover_name="region",
-        color_continuous_scale="Viridis",
-        mapbox_style="carto-positron",
-        center={"lat": 56.2639, "lon": 9.5018},
-        zoom=6,
-    )
-
-    fig_map.update_layout(
-        title="Danish Municipality Data",
-        margin={"r":0,"t":0,"l":0,"b":0}
-    )
-
-    return fig_map
 
 if __name__ == '__main__':
     app.run_server(debug=True)
