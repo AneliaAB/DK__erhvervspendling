@@ -1,7 +1,7 @@
 import subprocess
 import os
 import sys
-
+#_________________________________________________________INSTALLING PACKAGES__________________________________________________________
 def run_bash_setup():
     if os.path.isfile("setup.sh"):
         print("Running setup.sh...")
@@ -17,40 +17,44 @@ def run_bash_setup():
 if __name__ == "__main__":
     run_bash_setup()
 
+from dash import Dash, html, dcc, Input, Output
+import plotly.express as px
+import pandas as pd
+import sys
 from dash import Dash, dcc, html, Input, Output
 import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
 import json
 import geopandas as gpd
+#______________________________________________________HELPER FUNCTIONS______________________________________________________________
+#for loading segment data
+def load_and_process_data(files, delimiter, encoding='utf-8'):
+    processed_data = []
+    for file in files:
+        # Read the data
+        data = pd.read_csv(file, delimiter=delimiter, encoding=encoding)
+        # Filter out 'København' and 'Aarhus' for heatmap readability
+        data_filtered = data.loc[~data['kommune'].isin(['København', 'Aarhus'])]
+        processed_data.append(data_filtered)
+    return processed_data
+#_________________________________________________________LOADING DATA_______________________________________________________________
+files_arb = ['data/i_alt/efter_arbejde2022.csv','data/kvinder/efter_arbejde2022.csv','data/mænd/efter_arbejde2022.csv']
+files_bo = ['data/i_alt/efter_bopæl2022.csv','data/kvinder/efter_bopæl2022.csv','data/mænd/efter_bopæl2022.csv']
 
-#Beskæftigede (ultimo november) efter arbejdsområde, socioøkonomisk status, køn og pendlingsafstand
-i_alt_arb = pd.read_csv('data/i_alt/efter_arbejde2022.csv', delimiter=',', encoding='utf-8')
-kvinder_arb = pd.read_csv('data/kvinder/efter_arbejde2022.csv', delimiter=',', encoding='utf-8')
-mænd_arb = pd.read_csv('data/mænd/efter_arbejde2022.csv', delimiter=',', encoding='utf-8')
-segment_data = []
-for i in [i_alt_arb,kvinder_arb,mænd_arb]:
-    i = i.loc[(i['kommune'] != 'København') & (i['kommune'] != 'Aarhus')]
-    segment_data.append(i)
+# Load and process 'Beskæftigede' datasets
+segment_efterArbejde = load_and_process_data(files_arb, delimiter=',') #Beskæftigede (ultimo november) efter arbejdsområde, socioøkonomisk status, køn og pendlingsafstand
+segment_data_bopæl = load_and_process_data(files_bo, delimiter=';') #Beskæftigede (ultimo november) efter bopælsområde, socioøkonomisk status, køn og pendlingsafstand
 
-#Beskæftigede (ultimo november) efter bopælsområde, socioøkonomisk status, køn og pendlingsafstand
-i_alt_bo = pd.read_csv('data/i_alt/efter_bopæl2022.csv', delimiter=';', encoding='utf-8')
-kvinder_bo = pd.read_csv('data/kvinder/efter_bopæl2022.csv', delimiter=';', encoding='utf-8')
-mænd_bo = pd.read_csv('data/mænd/efter_bopæl2022.csv', delimiter=';', encoding='utf-8')
-segment_data_bopæl = []
-for i in [i_alt_bo,kvinder_bo,mænd_bo]:
-    i = i.loc[(i['kommune'] != 'København') & (i['kommune'] != 'Aarhus')]
-    segment_data_bopæl.append(i)
-
+#beskæftigede i alt efter år --> til histogram
 data = pd.read_csv('data/beskæftigede_i_alt.csv', delimiter=';', encoding='latin-1')
+
 #Beskæftigede (ultimo november) efter køn, tid, arbejdsstedsområde og pendlingsafstand
 i_alt_km = pd.read_csv('data/km_ialt.csv', delimiter=',', encoding='latin-1')
 kvinder_km = pd.read_csv('data/km_kvinder.csv', delimiter=',', encoding='latin-1')
 mænd_km = pd.read_csv('data/km_men.csv', delimiter=',', encoding='latin-1')
-
-i_alt_km['id'] = [3,4,2,1,0]
-i_alt_km
-
+#manually adding columns for visualising 
+i_alt_km['id'] = [3,4,2,1,0] 
 kvinder_km = kvinder_km.assign(køn=['kvinder', 'kvinder', 'kvinder', 'kvinder', 'kvinder'])
 mænd_km = mænd_km.assign(køn=['mænd', 'mænd', 'mænd', 'mænd', 'mænd'])
 
@@ -87,13 +91,14 @@ status_fig = px.bar(melted_df, x='Status', y='Count', color='afstand',
              text='Count',  # Show counts on bars
              color_discrete_sequence=px.colors.qualitative.Plotly)
 
-# Load GeoJSON file
+# Load GeoJSON files
 with open("data/simplified_geojson_file.geojson") as f:
     kommune_geojson = json.load(f)
 
 with open("data/regioner-geojson-wgs84.json") as f:
     regioner_geojson = json.load(f)
 
+#_____________________________________________________________________DASH APP________________________________________________________________
 app = Dash(__name__)
 
 app.layout = html.Div([
@@ -167,7 +172,7 @@ app.layout = html.Div([
             dcc.Graph(id='histogram')
         ])
 ])
-
+#____________________________________________________________CALLBACKS_________________________________________________________________
 @app.callback(
     Output('histogram', 'figure'),
     Input('histogram_dropdown', 'value')
@@ -176,12 +181,13 @@ app.layout = html.Div([
 def histogram(segment):
     data = data_dict[segment]
     years = [i for i in data['år']]
-    hele_landet = [i for i in data['Hele landet']]
-    region_hovedstaden = [i for i in data['Region Hovedstaden']]
-    region_sjaelland = [i for i in data['Region Sjælland']]
+    data_dict = {
+    hele_landet : [i for i in data['Hele landet']],
+    region_hovedstaden : [i for i in data['Region Hovedstaden']],
+    region_sjaelland : [i for i in data['Region Sjælland']]
     region_syddanmark = [i for i in data['Region Syddanmark']]
     region_midtjylland = [i for i in data['Region Midtjylland']]
-    region_nordjylland = [i for i in data['Region Nordjylland']]
+    region_nordjylland = [i for i in data['Region Nordjylland']]}
     fig = go.Figure()
 
     # Adding each region's data as a line
@@ -208,7 +214,7 @@ def histogram(segment):
     [Input('kommune_data', 'data'), Input('afstand_km_bopæl', 'value'), Input('segment_bopæl', 'value')]
 )
 
-def update_kommune_map(data, afstand_km, segment):
+def kommune_map_bopæl(data, afstand_km, segment):
     fig = px.choropleth_mapbox(
         segment_data_bopæl[segment],
         geojson=data,
@@ -218,7 +224,7 @@ def update_kommune_map(data, afstand_km, segment):
         color_continuous_scale="Viridis",
         mapbox_style="carto-positron",
         center={"lat": 56.2639, "lon": 9.5018},  # Center on Denmark
-        zoom=6,
+        zoom=5.5,
         )
 
     fig.update_layout(
@@ -233,9 +239,9 @@ def update_kommune_map(data, afstand_km, segment):
     [Input('kommune_data', 'data'), Input('afstand_km', 'value'), Input('segment', 'value')]
 )
 
-def update_kommune_map(data, afstand_km, segment):
+def update_kommune_map_arbejde(data, afstand_km, segment):
     fig = px.choropleth_mapbox(
-        segment_data[segment],
+        segment_efterArbejde[segment],
         geojson=data,
         locations="kommune",     # This is the column in your data with kommune IDs
         featureidkey='properties.navn',  # This should match the ID key in your GeoJSON
@@ -243,7 +249,7 @@ def update_kommune_map(data, afstand_km, segment):
         color_continuous_scale="Viridis",
         mapbox_style="carto-positron",
         center={"lat": 56.2639, "lon": 9.5018},  # Center on Denmark
-        zoom=6,
+        zoom=5.5,
         )
 
     fig.update_layout(
