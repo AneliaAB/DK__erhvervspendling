@@ -309,7 +309,8 @@ def display_cflights(lufthavn):
                 airports[lufthavn.split(' ')[1]][0],  # Latitude of source airport
                 airports[column.split('_')[1]][0]  # Latitude of destination airport
             ],
-            marker = {'size':  max(5, int(passagertal_aktiv[column].iloc[0]))}))
+            hoverinfo="text",
+            text=f"Passengers: {int(passagertal_aktiv[column].iloc[0])}")
     fig_flight_map.update_layout(
         mapbox={
             'style': "open-street-map",
