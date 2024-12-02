@@ -177,7 +177,7 @@ app.layout = html.Div([
         ),
         dcc.Graph(id='bopælsområdeIKm_graph')
         ],
-        style={'width': '43%', 'display': 'inline-block', 'padding': '20px', 'float':'right'}),
+        style={'width': '43%', 'display': 'inline-block', 'padding': '20px', 'float':'right', 'margin-left':'20px'}),
         html.Div([
             html.H3('Histogram'),
             dcc.Dropdown(id='histogram_dropdown',
@@ -191,7 +191,7 @@ app.layout = html.Div([
 
         html.Div([
             html.H1('Nutidsbillede af flytransport', style={'margin': 'auto', 'padding':'20px'}),
-            html.P('Her vises et kort og et diagram for afrejsende passagerer på indenrigsruter, med start- og slutdestinationer. Kortet viser de mulige rejsemål, mens Sankey-diagrammet illustrerer fordelingen af afrejsende passagerer til de forskellige destinationer. Du kan vælge den lufthavn, hvor passagererne rejser fra, i menuen nedenfor.'),
+            html.P('Her vises et kort og et diagram for afrejsende passagerer (Enhed : 1.000 personer) på indenrigsruter, med start- og slutdestinationer. Kortet viser ruter, mens Sankey-diagrammet illustrerer fordelingen af afrejsende passagerer til de forskellige destinationer. Du kan vælge den lufthavn, hvor passagererne rejser fra, i menuen nedenfor.', style={'width': '80%', 'display': 'inline-block', 'padding': '20px', 'float':'left'}),
             dcc.RadioItems(
                 style={'width': '20%', 'display': 'inline-block', 'padding': '5px', 'float':'left'},
                 id='fra_lufthavn', 
@@ -200,10 +200,10 @@ app.layout = html.Div([
             ),
             dcc.Graph(
                 id='flight_map',
-                style={'width': '60%', 'display': 'inline-block', 'padding': '20px', 'float':'right'}),
+                style={'width': '50%', 'display': 'inline-block', 'padding': '20px', 'float':'right'}),
             dcc.Graph(
                 id='flight_sankey',
-                style={'width': '30%', 'display': 'inline-block', 'padding': '5px', 'float':'left'})
+                style={'width': '40%', 'display': 'inline-block', 'padding': '5px', 'float':'left'})
 ])
 ]),
 
@@ -297,30 +297,31 @@ def display_cflights(lufthavn):
     passagertal_aktiv = passagertal_aktiv.dropna(axis='columns')
     print(passagertal_aktiv)
     for column in passagertal_aktiv.iloc[:,2:]: 
-        print(passagertal_aktiv[column])
-        fig_flight_map.add_trace(go.Scattermapbox(
-            mode = "lines",
-            lon=[
-                airports[lufthavn.split(' ')[1]][1],  # Longitude of source airport
-                airports[column.split('_')[1]][1]  # Longitude of destination airport
-            ],
-            lat=[
-                airports[lufthavn.split(' ')[1]][0],  # Latitude of source airport
-                airports[column.split('_')[1]][0]  # Latitude of destination airport
-            ],
-            line=dict(
-                    width=4,
-                    color=px.colors.sequential.Plasma[min(int(passagertal_aktiv[column]) // 50, 9)]  # Adjust scale for color
-                ),
-            hoverinfo="text",
-            text=f"Passengers: {int(passagertal_aktiv[column].iloc[0])}"))
+        if int(passagertal_aktiv[column]) > 0 :
+            fig_flight_map.add_trace(go.Scattermapbox(
+                mode = "lines",
+                lon=[
+                    airports[lufthavn.split(' ')[1]][1],  # Longitude of source airport
+                    airports[column.split('_')[1]][1]  # Longitude of destination airport
+                ],
+                lat=[
+                    airports[lufthavn.split(' ')[1]][0],  # Latitude of source airport
+                    airports[column.split('_')[1]][0]  # Latitude of destination airport
+                ],
+                line=dict(
+                        width=4,
+                        color=px.colors.sequential.Plasma[min(int(passagertal_aktiv[column]) // 50, 9)]  # Adjust scale for color
+                    ),
+                hoverinfo="text",
+                text=f"Passengers: {int(passagertal_aktiv[column].iloc[0])}"))
     fig_flight_map.update_layout(
         mapbox={
             'style': "open-street-map",
             'center': {'lon': 10, 'lat': 56},  # Center over Denmark
             'zoom': 5
         },
-        margin={'l': 0, 't': 0, 'b': 0, 'r': 0}
+        margin={'l': 0, 't': 0, 'b': 0, 'r': 0},
+        showlegend=False
     )
     return fig_flight_map
 
@@ -379,7 +380,7 @@ def display_sankey(lufthavn):
 
     # Update layout
     fig_sankey.update_layout(
-        title_text=f"Antal afrejsende fra {lufthavn.split(' ')[0]}",
+        title_text=f"Antal afrejsende fra {lufthavn.split(' ')[1]}",
         font_size=10
     )
 
