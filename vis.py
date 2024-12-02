@@ -102,7 +102,7 @@ with open("data/regioner-geojson-wgs84.json") as f:
 app = Dash(__name__)
 
 app.layout = html.Div([
-    html.H1('Erhvervspendling', style={'margin': 'auto', 'padding':'20px'}),
+    html.H1('Nutidsbillede af erhvervspendling', style={'margin': 'auto', 'padding':'20px'}),
     html.H3('Beskæftigede efter pendlingsafstand og socioøkonomisk status'),
     dcc.Graph(figure=status_fig),
 
@@ -181,22 +181,17 @@ app.layout = html.Div([
 def histogram(segment):
     data = data_dict[segment]
     years = [i for i in data['år']]
-    data_dict = {
-    hele_landet : [i for i in data['Hele landet']],
-    region_hovedstaden : [i for i in data['Region Hovedstaden']],
-    region_sjaelland : [i for i in data['Region Sjælland']]
-    region_syddanmark = [i for i in data['Region Syddanmark']]
-    region_midtjylland = [i for i in data['Region Midtjylland']]
-    region_nordjylland = [i for i in data['Region Nordjylland']]}
+    filtered_data = {
+    'hele landet' : [i for i in data['Hele landet']],
+    'region hovedstaden' : [i for i in data['Region Hovedstaden']],
+    'region sjaelland' : [i for i in data['Region Sjælland']],
+    'region syddanmark' : [i for i in data['Region Syddanmark']],
+    'region midtjylland' : [i for i in data['Region Midtjylland']],
+    'region nordjylland' : [i for i in data['Region Nordjylland']]}
     fig = go.Figure()
 
-    # Adding each region's data as a line
-    fig.add_trace(go.Scatter(x=years, y=hele_landet, mode='lines', name='Hele landet'))
-    fig.add_trace(go.Scatter(x=years, y=region_hovedstaden, mode='lines', name='Region Hovedstaden'))
-    fig.add_trace(go.Scatter(x=years, y=region_sjaelland, mode='lines', name='Region Sjælland'))
-    fig.add_trace(go.Scatter(x=years, y=region_syddanmark, mode='lines', name='Region Syddanmark'))
-    fig.add_trace(go.Scatter(x=years, y=region_midtjylland, mode='lines', name='Region Midtjylland'))
-    fig.add_trace(go.Scatter(x=years, y=region_nordjylland, mode='lines', name='Region Nordjylland'))
+    for key, value in filtered_data.items():
+        fig.add_trace(go.Scatter(x=years, y=value, mode='lines', name=key))
 
     # Update layout
     fig.update_layout(
@@ -205,7 +200,6 @@ def histogram(segment):
         yaxis_title="Afstand i km",
         template="ggplot2"
     )
-
     return fig
 
 # Callback to update map based on dropdown selection
