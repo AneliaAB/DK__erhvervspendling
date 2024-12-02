@@ -191,7 +191,7 @@ app.layout = html.Div([
 
         html.Div([
             html.H1('Nutidsbillede af flytransport', style={'margin': 'auto', 'padding':'20px'}),
-            html.P('Viser antallet af afrejsende fra startdestination til slutdestination'),
+            html.P('Her vises et kort og et diagram for afrejsende passagerer på indenrigsruter, med start- og slutdestinationer. Kortet viser de mulige rejsemål, mens Sankey-diagrammet illustrerer fordelingen af afrejsende passagerer til de forskellige destinationer. Du kan vælge den lufthavn, hvor passagererne rejser fra, i menuen nedenfor.'),
             dcc.RadioItems(
                 style={'width': '20%', 'display': 'inline-block', 'padding': '5px', 'float':'left'},
                 id='fra_lufthavn', 
@@ -379,13 +379,11 @@ def display_sankey(lufthavn):
 
     # Update layout
     fig_sankey.update_layout(
-        title_text=f"Passenger Traffic from {lufthavn}",
+        title_text=f"Antal afrejsende fra {lufthavn.split(' ')[0]}",
         font_size=10
     )
 
     return fig_sankey
-
-
 
 if __name__ == '__main__':
     app.run_server(debug=True)
