@@ -301,16 +301,23 @@ def display_cflights(lufthavn):
         print(passagertal_aktiv[column])
         fig_flight_map.add_trace(go.Scattermapbox(
             mode = "markers+lines",
-            lon = airports[lufthavn.split(' ')[1]],
-            lat = airports[column.split('_')[1]],
-            marker = {'size': int(passagertal_aktiv[column])}))
+            lon=[
+                airports[lufthavn.split(' ')[1]][1],  # Longitude of source airport
+                airports[column.split('_')[1]][1]  # Longitude of destination airport
+            ],
+            lat=[
+                airports[lufthavn.split(' ')[1]][0],  # Latitude of source airport
+                airports[column.split('_')[1]][0]  # Latitude of destination airport
+            ],
+            marker = {'size':  max(5, int(passagertal_aktiv[column].iloc[0]))}))
     fig_flight_map.update_layout(
-        margin ={'l':0,'t':0,'b':0,'r':0},
-        map = {
-            'center': {'lon': 10, 'lat': 10},
+        mapbox={
             'style': "open-street-map",
-            'center': {'lon': -20, 'lat': -20},
-            'zoom': 1})
+            'center': {'lon': 10, 'lat': 56},  # Center over Denmark
+            'zoom': 5
+        },
+        margin={'l': 0, 't': 0, 'b': 0, 'r': 0}
+    )
     return fig_flight_map
 
 if __name__ == '__main__':
