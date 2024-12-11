@@ -129,13 +129,17 @@ airports = {
 app = Dash(__name__)
 
 app.layout = html.Div([
-    html.H1('Nutidsbillede af erhvervspendling', style={'margin': 'auto', 'padding':'20px'}),
-    html.H3('Beskæftigede efter pendlingsafstand og socioøkonomisk status'),
+    html.H1('Nutidsbillede af erhvervspendling', style={'padding': '10px', 'text-align':'center', 'width': '80%'}),
+    html.P('Figuren viser fordelingen af pendlingsafstand i procenter for hver socioøkonomisk status.', style={'padding': '10px', 'width': '80%', 'margin':'auto'}),
     dcc.Graph(figure=status_fig),
-
+    html.H2('Heatmaps', style={'padding': '10px', 'text-align':'center', 'width': '80%'}),
+    html.P('Figuren viser to separate heatmaps, der illustrerer antallet af beskæftigede i Danmark baseret på henholdsvis arbejdsstedsområde og bopælsområde. De anvendte data stammer fra Danmarks Statistik og er opgjort efter arbejdsstedets kommune og bopælskommunen, henholdsvis.', style={'padding': '10px', 'width': '80%', 'margin':'auto'}),
+    html.Br(),
+    html.P('Heatmap for arbejdsstedsområde: Dette viser, hvor mange personer der er beskæftiget i forskellige kommuner, som pendler fra deres arbejde til deres hjem, uden hensyn til hvor deres bopæl ligger. Fordelt på afstand i km.', style={'padding': '10px', 'width': '80%', 'margin':'auto'}),
+    html.Br(),
+    html.P('Heatmap for bopælsområde: Dette viser antallet af beskæftigede, der bor i forskellige kommuner og pendler fra deres hjem til arbejde, uden hensyn til hvor arbejdsstedet ligger. Fordelt på afstand i km.', style={'padding': '10px', 'width': '80%', 'margin':'auto'}),
     html.Div([
         html.H3('Antal beskæftigede efter arbejdsstedsområde, køn, tid og pendlingsafstand'),
-        html.P('Viser antallet af personer, der pendler til (og fra) deres arbejdssted efter pendlingsafstand i km og kommune'),
         dcc.Store(id='kommune_data', data=kommune_geojson),
         dcc.Dropdown(
             id='afstand_km',
@@ -156,9 +160,8 @@ app.layout = html.Div([
         dcc.Graph(id='arbejdsområdeIKm_graph')
         ],
         style={'width': '43%', 'display': 'inline-block', 'padding': '20px'}),
-        html.Div([
+    html.Div([
         html.H3('Antal beskæftigede efter bopælsområde, køn, tid og pendlingsafstand'),
-        html.P('Viser antallet af personer, der pendler fra (og til) deres hjem efter pendlingsafstand i km og kommune'),
         dcc.Dropdown(
             id='afstand_km_bopæl',
             options= ['I alt', 'Ingen pendling', 'Indtil 5 km', '5-10 km','10-20 km','20-30 km','30-40 km','40-50 km','Over 50 km','Ikke beregnet'],
@@ -178,16 +181,16 @@ app.layout = html.Div([
         dcc.Graph(id='bopælsområdeIKm_graph')
         ],
         style={'width': '43%', 'display': 'inline-block', 'padding': '20px', 'float':'right', 'margin-left':'20px'}),
-        html.Div([
-            html.H3('Histogram'),
-            dcc.Dropdown(id='histogram_dropdown',
-                         options = [
-                            {"label": "i alt", "value": "i alt"},
-                            {"label": "kvinder", "value": "kvinder"},
-                            {"label": "mænd", "value": "mænd"}
-                        ], value="i alt",  # Default value for Map,
-                        style={'width': '120px'} ),
-            dcc.Graph(id='histogram')]),
+    html.Div([
+        html.H3('Histogram'),
+        dcc.Dropdown(id='histogram_dropdown',
+                    options = [
+                        {"label": "i alt", "value": "i alt"},
+                        {"label": "kvinder", "value": "kvinder"},
+                        {"label": "mænd", "value": "mænd"}
+                    ], value="i alt",  # Default value for Map,
+                    style={'width': '120px'} ),
+        dcc.Graph(id='histogram')]),
 
         html.Div([
             html.H1('Nutidsbillede af flytransport', style={'margin': 'auto', 'padding':'20px'}),
@@ -258,7 +261,7 @@ def kommune_map_bopæl(data, afstand_km, segment):
 
     fig.update_layout(
         title="Danish Municipality Data",
-        margin={"r":0,"t":0,"l":0,"b":0}
+        margin={"r":0,"t":0,"l":0,"b":0},
     )
     return fig
 
